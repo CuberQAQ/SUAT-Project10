@@ -2,10 +2,14 @@
 #include <ctime>
 #include <cstdlib>
 
-int main() {
+int main(int argc, char* argv[]) {
     srand(time(NULL));
     Game game;
-    game.loadMap("map.txt");
+    if (argc > 1) {
+        game.loadMap(argv[1]);
+    } else {
+        game.loadMap("");
+    }
     game.run();
     return 0;
 }

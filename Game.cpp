@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 
-Game::Game() : rows(31), cols(80), level(1), spawnTimer(0), running(false) {
+Game::Game() : running(false), rows(31), cols(80), level(1), spawnTimer(0) {
     player = new BattleShip(rows/2, cols/2);
     // Add some random obstacles if map not loaded, or load map
 }
@@ -26,6 +26,7 @@ Game::~Game() {
 void Game::loadMap(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
+        mapName = "Random";
         // Fallback: Generate border walls and random obstacles
         // Shift map down by 1 to reserve row 0 for UI
         for (int r = 1; r < rows; ++r) {
@@ -87,6 +88,8 @@ void Game::loadMap(const std::string& filename) {
         }
     }
 
+    mapName = filename;
+
     while (file.get(c)) {
         if (c == '\n') {
             r++;
@@ -115,12 +118,12 @@ void Game::run() {
             running = false;
         }
         
-        if (player->coins >= 1000) {
+        if (player->coins >= 100) {
             nextLevel();
         }
 
         // Control frame rate
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
     }
 }
 
@@ -309,7 +312,7 @@ void Game::spawnEnemies() {
         }
         
         // Spawn Items
-        if (rand() % 100 < 5) {
+        if (rand() % 100 < 30) {
              int attempts = 0;
              while (attempts < 10) {
                  int iR = rand() % (rows - 6) + 3;
@@ -321,7 +324,7 @@ void Game::spawnEnemies() {
                  attempts++;
              }
         }
-        if (rand() % 100 < 5) {
+        if (rand() % 100 < 15) {
              int attempts = 0;
              while (attempts < 10) {
                  int iR = rand() % (rows - 6) + 3;
@@ -365,7 +368,6 @@ void Game::checkCollisions() {
         // Player
         if (!w->isPlayerWeapon) {
             // Check collision with player body
-            bool hit = false;
             // Simplified check: center point. For multi-tile ships, need better box check.
             if (abs(w->row - player->row) <= 1 && abs(w->col - player->col) <= 1) {
                  player->takeDamage(w->damage);
@@ -451,12 +453,13 @@ void Game::draw() {
     gui.clear();
     
     // Draw Objects
+    for (auto w : weapons) w->draw(gui);
     for (auto o : obstacles) o->draw(gui);
     for (auto i : items) i->draw(gui);
     for (auto e : enemies) e->draw(gui);
     for (auto b : bombers) b->draw(gui);
     player->draw(gui); // Player on top
-    for (auto w : weapons) w->draw(gui);
+    
 
     // Draw Stats (Draw LAST to ensure visibility on top of map/objects)
     // Clear the line first to ensure readability
@@ -479,7 +482,7 @@ void Game::draw() {
     // Shells
     gui.printMsg(0, x, "Shells:"); x += 7;
     sprintf(valBuf, " %d ", player->shells);
-    for(int i=0; valBuf[i]; i++) gui.paintat(0, x+i, valBuf[i], COL_DEFAULT);
+    for(int i=0; valBuf[i]; i++) gui.paintat(0, x+i, valBuf[i], COL_ENEMY);
     x += strlen(valBuf) + 2;
 
     // Missiles
@@ -493,12 +496,34 @@ void Game::draw() {
     sprintf(valBuf, " %d ", level);
     for(int i=0; valBuf[i]; i++) gui.paintat(0, x+i, valBuf[i], COL_BOMBER); // Use Cyan for level
     
+    // Map Info
+    gui.printMsg(rows, 0, "Map: ");
+    for(int i=0; i < mapName.length(); i++) {
+        gui.paintat(rows, 5+i, mapName[i], COL_PLAYER);
+    }
+    
+    if (mapName == "Random") {
+        gui.printMsg(rows + 1, 0, "(Load custom map: ./main map.txt )");
+    }
+
     gui.redraw();
 }
 
 void Game::nextLevel() {
     level++;
     player->coins = 0;
+    
+    // Clear all enemies and bombers
+    for (auto e : enemies) delete e;
+    enemies.clear();
+    
+    for (auto b : bombers) delete b;
+    bombers.clear();
+    
+    // Clear all weapons (optional, but good for clean slate)
+    for (auto w : weapons) delete w;
+    weapons.clear();
+
     // Difficulty increase?
     spawnTimer = -100; // Delay spawns
     gui.printMsg(rows/2, cols/2 - 5, "LEVEL UP!");

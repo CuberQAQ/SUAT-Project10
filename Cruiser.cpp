@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <cmath>
 
-Cruiser::Cruiser(int r, int c) : EnemyShip(r, c, CRUISER, 100, 6) { // 100 HP, MAGENTA (6)
+Cruiser::Cruiser(int r, int c) : EnemyShip(r, c, CRUISER, 30, 6) { // 100 HP, MAGENTA (6)
     shells = 30;
     missiles = 2;
     shootInterval = 15;
@@ -19,7 +19,7 @@ void Cruiser::update(int maxR, int maxC, const std::vector<Obstacle*>& obstacles
     if (moveTimer >= moveInterval) {
         moveTimer = 0;
         Direction d = NONE;
-        bool useAI = (rand() % 100 < 90) && player;
+        bool useAI = (rand() % 100 < 70) && player;
         
         if (useAI) {
             int dCol = player->col - col;

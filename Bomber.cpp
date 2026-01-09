@@ -9,15 +9,15 @@ void Bomber::draw(Gui& gui) {
     // \ 
     // or reverse
     if (flyDir == RIGHT) {
-        gui.paintat(row-1, col, '/', color);
-        gui.paintat(row, col, '=', color);
-        gui.paintat(row, col+1, '=', color);
-        gui.paintat(row+1, col, '\\', color);
-    } else {
         gui.paintat(row-1, col, '\\', color);
         gui.paintat(row, col, '=', color);
         gui.paintat(row, col-1, '=', color);
         gui.paintat(row+1, col, '/', color);
+    } else {
+        gui.paintat(row-1, col, '/', color);
+        gui.paintat(row, col, '=', color);
+        gui.paintat(row, col+1, '=', color);
+        gui.paintat(row+1, col, '\\', color);
     }
 }
 

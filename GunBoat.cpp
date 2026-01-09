@@ -17,7 +17,7 @@ void GunBoat::update(int maxR, int maxC, const std::vector<Obstacle*>& obstacles
     if (moveTimer >= moveInterval) {
         moveTimer = 0;
         Direction d = NONE;
-        bool useAI = (rand() % 100 < 90) && player;
+        bool useAI = (rand() % 100 < 70) && player;
         
         if (useAI) {
             int dRow = player->row - row;

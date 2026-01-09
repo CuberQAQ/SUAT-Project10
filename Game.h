@@ -32,6 +32,7 @@ private:
     int cols;
     int level;
     int spawnTimer;
+    std::string mapName;
     
     BattleShip* player;
     std::vector<EnemyShip*> enemies;
